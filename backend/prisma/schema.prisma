@@ -1,0 +1,183 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  DISTRIBUIDOR
+  CLIENTE
+}
+
+enum OrderStatus {
+  PENDING
+  ACCEPTED
+  PAID
+  SHIPPED
+  IN_TRANSIT
+  DELIVERED
+  CANCELLED
+}
+
+enum QuoteStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  name      String
+  role      Role     @default(CLIENTE)
+  country   String
+  phone     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  store     Store?
+  orders    Order[]
+  quotes    Quote[]  @relation("UserQuotes")
+  sentMessages     Message[] @relation("SentMessages")
+  receivedMessages Message[] @relation("ReceivedMessages")
+  cart   Cart?  
+}
+
+model Store {
+  id        Int      @id @default(autoincrement())
+  name      String
+  description String?
+  ownerId   Int      @unique
+  owner     User     @relation(fields: [ownerId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  products  Product[]
+  orders    Order[]
+  quotes    Quote[]  @relation("StoreQuotes")
+}
+
+model Category {
+  id       Int       @id @default(autoincrement())
+  name     String    @unique
+  icon     String    
+  slug     String    @unique 
+  
+  products Product[]
+}
+
+model Product {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?  @db.Text
+  priceCOP    Decimal  @db.Decimal(10, 2)
+  stock       Int
+  images      String[] // URLs de imágenes
+  storeId     Int
+  store       Store    @relation(fields: [storeId], references: [id])
+  categoryId  Int?
+  category    Category? @relation(fields: [categoryId], references: [id])  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  orderItems  OrderItem[]
+  quoteItems  QuoteItem[] @relation("ProductQuoteItems")
+  cartItems  CartItem[]
+
+  @@index([storeId])
+  @@index([categoryId])
+}
+
+model Order {
+  id           Int          @id @default(autoincrement())
+  buyerId      Int
+  storeId      Int
+  status       OrderStatus  @default(PENDING)
+  total        Decimal      @db.Decimal(10, 2)
+  trackingCode String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  buyer        User         @relation(fields: [buyerId], references: [id])
+  store        Store        @relation(fields: [storeId], references: [id])
+  items        OrderItem[]
+
+  @@index([buyerId])
+  @@index([storeId])
+}
+
+model OrderItem {
+  id        Int      @id @default(autoincrement())
+  orderId   Int
+  productId Int
+  quantity  Int
+  price     Decimal  @db.Decimal(10, 2)
+
+  order     Order    @relation(fields: [orderId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id])
+}
+
+model Quote {
+  id        Int         @id @default(autoincrement())
+  buyerId   Int
+  storeId   Int
+  total     Decimal     @db.Decimal(10, 2)
+  status    QuoteStatus @default(PENDING)
+  createdAt DateTime    @default(now())
+
+  buyer     User        @relation("UserQuotes", fields: [buyerId], references: [id])
+  store     Store       @relation("StoreQuotes", fields: [storeId], references: [id])
+  items     QuoteItem[]
+}
+
+model QuoteItem {
+  id        Int      @id @default(autoincrement())
+  quoteId   Int
+  productId Int
+  quantity  Int
+  price     Decimal  @db.Decimal(10, 2)
+
+  quote     Quote    @relation(fields: [quoteId], references: [id])
+  product   Product  @relation("ProductQuoteItems", fields: [productId], references: [id])
+}
+
+model Message {
+  id         Int      @id @default(autoincrement())
+  senderId   Int
+  receiverId Int
+  content    String   @db.Text
+  createdAt  DateTime @default(now())
+
+  sender     User     @relation("SentMessages", fields: [senderId], references: [id])
+  receiver   User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  
+  @@index([senderId])
+  @@index([receiverId])
+}
+
+model Cart {
+  id        Int        @id @default(autoincrement())
+  userId    Int        @unique
+  user      User       @relation(fields: [userId], references: [id])
+  items     CartItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model CartItem {
+  id        Int     @id @default(autoincrement())
+  cartId    Int
+  cart      Cart    @relation(fields: [cartId], references: [id])
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([cartId, productId])
+}
