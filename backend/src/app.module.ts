@@ -11,9 +11,22 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { UsersModule } from './modules/users/users.module';
 import { DistributorModule } from './modules/distributor/distributor.module';
 import { CategoriesModule } from './modules/categories/categories.module';
+import { UploadsModule } from './modules/uploads/uploads.module';
 
 @Module({
-  imports: [PrismaModule, AuthModule, ProductsModule, StoresModule, OrdersModule, CartModule, AnalyticsModule, UsersModule, DistributorModule, CategoriesModule],
+  imports: [
+    PrismaModule,
+    AuthModule,
+    ProductsModule,
+    StoresModule,
+    OrdersModule,
+    CartModule,
+    AnalyticsModule,
+    UsersModule,
+    DistributorModule,
+    CategoriesModule,
+    UploadsModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

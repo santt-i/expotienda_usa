@@ -10,6 +10,8 @@ import { distributorService } from '../services/distributor.service';
 import { productsService } from '../../products/services/products.service';
 import { categoriesService, Category } from '../../products/services/categories.service';
 import { COLORS } from '../../../core/theme/colors';
+import ImagePickerComponent from '../components/ImagePickerComponent';
+
 
 export default function ProductFormScreen() {
   const route = useRoute();
@@ -22,6 +24,7 @@ export default function ProductFormScreen() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [storeId, setStoreId] = useState<number | null>(null);
+  const [productImages, setProductImages] = useState<string[]>([]);
 
   // Lista de categorías que vienen del backend
   const [categories, setCategories] = useState<Category[]>([]);
@@ -63,6 +66,7 @@ export default function ProductFormScreen() {
         });
         // Si el producto ya tenía categoría, la preseleccionamos
         setSelectedCategoryId(product.categoryId ?? null);
+        setProductImages(product.images ?? []);
       }
     } catch (error) {
       Alert.alert('Error', 'No se pudieron cargar los datos');
@@ -255,7 +259,14 @@ export default function ProductFormScreen() {
             </View>
           </View>
         </View>
-
+        
+        {isEditing && productId && (
+        <ImagePickerComponent
+          productId={productId}
+          existingImages={productImages}  // <- cambiar [] por productImages
+          onImagesChange={setProductImages}
+        />
+        )}
         <View style={styles.storeIndicator}>
           <Ionicons name="storefront-outline" size={16} color={COLORS.accent} />
           <Text style={styles.storeText}>

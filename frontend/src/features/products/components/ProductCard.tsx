@@ -1,5 +1,8 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import {
+  View, Text, TouchableOpacity,
+  StyleSheet, Image,
+} from 'react-native';
 import { COLORS } from '../../../core/theme/colors';
 import { Product } from '../services/products.service';
 import { formatCurrency } from '../../../utils/formatters';
@@ -10,13 +13,33 @@ type Props = {
 };
 
 export default function ProductCard({ product, onPress }: Props) {
+  const firstImage = product.images?.[0];
+
   return (
-    <TouchableOpacity style={styles.card} onPress={() => onPress(product.id)} activeOpacity={0.8}>
-      <View style={styles.imagePlaceholder}>
-        <Text style={styles.imageEmoji}>📦</Text>
-      </View>
+    <TouchableOpacity
+      style={styles.card}
+      onPress={() => onPress(product.id)}
+      activeOpacity={0.8}
+    >
+      {/* Área de imagen — condicional según si tiene foto o no */}
+      {firstImage ? (
+        // Tiene imagen — la mostramos con Image 
+        // resizeMode="cover" hace que la imagen llene el espacio sin distorsionarse
+        <Image
+          source={{ uri: firstImage }}
+          style={styles.image}
+          resizeMode="cover"
+        />
+      ) : (
+        // No tiene imagen — mostramos el placeholder con emoji
+        <View style={styles.imagePlaceholder}>
+          <Text style={styles.imageEmoji}>📦</Text>
+        </View>
+      )}
+
       <Text style={styles.name} numberOfLines={2}>{product.name}</Text>
       <Text style={styles.price}>{formatCurrency(product.priceCOP)}</Text>
+
       {product.stock > 0 ? (
         <View style={styles.stockBadge}>
           <Text style={styles.stockText}>En stock</Text>
@@ -39,6 +62,12 @@ const styles = StyleSheet.create({
     borderColor: COLORS.border,
     padding: 12,
     marginBottom: 12,
+  },
+  image: {
+    width: '100%',
+    height: 120,
+    borderRadius: 10,
+    marginBottom: 8,
   },
   imagePlaceholder: {
     width: '100%',
