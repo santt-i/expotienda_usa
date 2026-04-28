@@ -31,12 +31,11 @@ export default function LoginScreen({ navigation }: any) {
       await authService.login(trimmedEmail, trimmedPassword);
       await signIn();
     } catch (error: any) {
-      const msg =
-        error?.response?.data?.message ||
-        error?.message ||
-        'Error desconocido';
-      Alert.alert('Error al iniciar sesión', msg);
-    } finally {
+  const rawMsg = error?.response?.data?.message || error?.message || 'Error desconocido';
+  // Si el backend devuelve un array de errores, los unimos en un string
+  const msg = Array.isArray(rawMsg) ? rawMsg.join('\n') : rawMsg;
+  Alert.alert('Error al iniciar sesión', msg);
+  }finally {
       setLoading(false);
     }
   };

@@ -5,6 +5,7 @@ import { useRoute } from '@react-navigation/native';
 import { ordersService, Order } from '../services/orders.service';
 import { COLORS } from '../../../core/theme/colors';
 import { formatCurrency } from '../../../utils/formatters';
+import { translateOrderStatus } from '../../../utils/OrderStatus';
 
 export default function OrderDetailScreen() {
   const route = useRoute();
@@ -39,7 +40,7 @@ export default function OrderDetailScreen() {
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <View style={styles.content}>
         <Text style={styles.title}>Orden #{order.id}</Text>
-        <Text style={styles.status}>Estado: {order.status}</Text>
+        <Text style={styles.status}>Estado: {translateOrderStatus(order.status)}</Text>
         <Text style={styles.date}>Fecha: {new Date(order.createdAt).toLocaleString()}</Text>
         <Text style={styles.store}>Tienda: {order.store.name}</Text>
         <Text style={styles.sectionTitle}>Productos</Text>
@@ -53,7 +54,7 @@ export default function OrderDetailScreen() {
             </View>
           )}
           keyExtractor={(item) => item.id.toString()}
-          scrollEnabled={false} // porque ya está dentro de un ScrollView (opcional)
+          scrollEnabled={false}
         />
         <Text style={styles.total}>Total: {formatCurrency(order.total)}</Text>
       </View>

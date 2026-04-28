@@ -215,7 +215,14 @@ async function main() {
       data: {
         buyerId: client.id,
         storeId: store.id,
-        status: faker.helpers.arrayElement(statuses),
+        status: faker.helpers.weightedArrayElement([
+         { weight: 3, value: OrderStatus.DELIVERED },
+         { weight: 2, value: OrderStatus.PAID },
+         { weight: 1, value: OrderStatus.SHIPPED },
+         { weight: 1, value: OrderStatus.PENDING },
+         { weight: 1, value: OrderStatus.CANCELLED },
+         { weight: 1, value: OrderStatus.ACCEPTED },
+        ]),
         total,
         createdAt,
         items: {

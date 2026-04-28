@@ -9,9 +9,12 @@ import { Roles } from '../../common/decorators/roles.decorator';
 export class AnalyticsController {
   constructor(private analyticsService: AnalyticsService) {}
 
-  @Get('sales-overview')
+  @Get('overview')
   @Roles('ADMIN', 'DISTRIBUIDOR')
-  async getSalesOverview(@Request() req, @Query('storeId') storeId?: string) {
+  async getOverview(
+    @Request() req,
+    @Query('storeId') storeId?: string,
+  ) {
     return this.analyticsService.getSalesOverview(
       req.user.userId,
       req.user.role,

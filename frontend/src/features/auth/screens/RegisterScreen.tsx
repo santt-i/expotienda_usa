@@ -77,8 +77,10 @@ export default function RegisterScreen({ navigation }: any) {
         { text: 'OK', onPress: () => navigation.goBack() },
       ]);
     } catch (error: any) {
-      Alert.alert('Error', error.response?.data?.message || 'No se pudo registrar');
-    } finally {
+  const rawMsg = error?.response?.data?.message || error?.message || 'No se pudo registrar';
+  const msg = Array.isArray(rawMsg) ? rawMsg.join('\n') : rawMsg;
+  Alert.alert('Error', msg);
+}finally {
       setLoading(false);
     }
   };

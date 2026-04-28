@@ -12,6 +12,7 @@ import { UsersModule } from './modules/users/users.module';
 import { DistributorModule } from './modules/distributor/distributor.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { UploadsModule } from './modules/uploads/uploads.module';
+import { PaymentsModule } from './modules/payments/payments.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { UploadsModule } from './modules/uploads/uploads.module';
     DistributorModule,
     CategoriesModule,
     UploadsModule,
+    PaymentsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

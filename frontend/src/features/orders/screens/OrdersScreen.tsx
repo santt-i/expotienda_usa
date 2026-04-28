@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { ordersService, Order } from '../services/orders.service';
 import { COLORS } from '../../../core/theme/colors';
+import { translateOrderStatus } from '../../../utils/OrderStatus';
 
 export default function OrdersScreen() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -38,7 +39,7 @@ export default function OrdersScreen() {
         <Text style={styles.orderId}>Orden #{item.id}</Text>
         <View style={[styles.statusBadge, { backgroundColor: item.status === 'DELIVERED' ? COLORS.accentLight : COLORS.border }]}>
           <Text style={[styles.statusText, { color: item.status === 'DELIVERED' ? COLORS.accent : COLORS.textSecondary }]}>
-            {item.status}
+            {translateOrderStatus(item.status)}
           </Text>
         </View>
       </View>

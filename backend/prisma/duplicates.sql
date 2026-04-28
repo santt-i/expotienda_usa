@@ -1,0 +1,5 @@
+SELECT name, COUNT(*)
+FROM "Product"
+GROUP BY name
+HAVING COUNT(*) > 1
+ORDER BY COUNT(*) DESC;

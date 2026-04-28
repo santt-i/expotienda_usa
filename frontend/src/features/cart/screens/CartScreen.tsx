@@ -5,11 +5,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { cartService, CartItem } from '../services/cart.service';
 import { COLORS } from '../../../core/theme/colors';
 import { formatCurrency } from '../../../utils/formatters';
+import { useStripe } from '@stripe/stripe-react-native';
+import { paymentsService } from '../../payments/services/payments.service';
 
 export default function CartScreen({ navigation }: any) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
+  const { initPaymentSheet, presentPaymentSheet } = useStripe();
 
   const recalcTotal = (cartItems: CartItem[]) => {
     const newTotal = cartItems.reduce((sum, item) => sum + (item.product?.priceCOP ?? 0) * item.quantity, 0);
@@ -68,14 +71,38 @@ export default function CartScreen({ navigation }: any) {
   };
 
   const handleCheckout = async () => {
-    try {
-      await cartService.checkout();
-      Alert.alert('Éxito', 'Orden creada correctamente');
-      navigation.navigate('MainTabs', { screen: 'Órdenes' });
-    } catch (error) {
-      Alert.alert('Error', 'No se pudo completar la compra');
-    }
-  };
+  if (items.length === 0) {
+    Alert.alert('Carrito vacío', 'Agrega productos para continuar.');
+    return;
+  }
+  setLoading(true);
+  try {
+    // 1. Crear PaymentIntent en el backend
+    const { clientSecret } = await paymentsService.createPaymentIntent(total, 'usd');
+
+    // 2. Inicializar la hoja de pago de Stripe
+    const { error: initError } = await initPaymentSheet({
+      paymentIntentClientSecret: clientSecret,
+      merchantDisplayName: 'ExpoTienda USA',
+    });
+    if (initError) throw initError;
+
+    // 3. Presentar la hoja de pago al usuario
+    const { error: presentError } = await presentPaymentSheet();
+    if (presentError) throw presentError;
+
+    // 4. Pago exitoso – crear la orden en tu backend
+    await cartService.checkout();
+
+    Alert.alert('Éxito', '¡Pago realizado y orden creada!');
+    navigation.navigate('MainTabs', { screen: 'Órdenes' });
+  } catch (error: any) {
+    console.error(error);
+    Alert.alert('Error', error.message || 'No se pudo completar el pago');
+  } finally {
+    setLoading(false);
+  }
+};
 
   if (loading) {
     return <ActivityIndicator size="large" color={COLORS.accent} style={styles.center} />;
