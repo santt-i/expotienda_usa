@@ -181,3 +181,15 @@ model CartItem {
 
   @@unique([cartId, productId])
 }
+
+model Event {
+  id        Int      @id @default(autoincrement())
+  userId    Int?
+  type      String
+  payload   Json
+  createdAt DateTime @default(now())
+
+  @@index([type])
+  @@index([userId])
+  @@index([createdAt])
+}
