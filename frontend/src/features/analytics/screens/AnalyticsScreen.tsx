@@ -1,26 +1,47 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, ActivityIndicator, StyleSheet } from 'react-native';
+import { ScrollView, View, Text, StyleSheet, ActivityIndicator, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { analyticsService, SalesOverview } from '../services/analytics.service';
+import { useAuth } from '../../../core/context/AuthContext';
+import { analyticsService } from '../services/analytics.service';
+import { SalesOverview } from '../types';
 import MetricCard from '../components/MetricCard';
 import SalesLineChart from '../components/SalesLineChart';
+import TopProductsChart from '../components/TopProductsChart';
 import OrdersStatusChart from '../components/OrdersStatusChart';
+import ComparisonCard from '../components/ComparisonCard';
 import { COLORS } from '../../../core/theme/colors';
+import { formatCurrency } from '../../../utils/formatters';
 
 export default function AnalyticsScreen() {
+  const { user } = useAuth();
   const [data, setData] = useState<SalesOverview | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const loadData = async () => {
+    try {
+      const overview = await analyticsService.getOverview();
+      setData(overview);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
 
   useEffect(() => {
-    analyticsService.getOverview()
-      .then(setData)
-      .catch(console.error)
-      .finally(() => setLoading(false));
+    loadData();
   }, []);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    loadData();
+  };
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.center}>
+      <SafeAreaView style={styles.centerContainer}>
         <ActivityIndicator size="large" color={COLORS.accent} />
       </SafeAreaView>
     );
@@ -28,44 +49,69 @@ export default function AnalyticsScreen() {
 
   if (!data) {
     return (
-      <SafeAreaView style={styles.center}>
+      <SafeAreaView style={styles.centerContainer}>
         <Text>No se pudieron cargar los datos</Text>
       </SafeAreaView>
     );
   }
 
-  const { totalSales, totalOrders, averageOrderValue, salesByDay, ordersByStatus } = data;
-
-  // Asegurar que los valores sean números (pueden venir como string desde la API)
-  const safeValue = (val: any): number => {
-    if (typeof val === 'number') return val;
-    if (typeof val === 'string') return parseFloat(val) || 0;
-    return 0;
-  };
-
-  const salesNumber = safeValue(totalSales);
-  const ordersNumber = safeValue(totalOrders);
-  const avgNumber = safeValue(averageOrderValue);
-
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[COLORS.accent]} />}
+      >
         <Text style={styles.header}>Analítica de ventas</Text>
 
+        {/* Fila de métricas principales */}
         <View style={styles.metricsRow}>
-          <View style={styles.metricItem}>
-            <MetricCard title="Ventas totales" value={salesNumber} prefix="$" />
-          </View>
-          <View style={styles.metricItem}>
-            <MetricCard title="Órdenes" value={ordersNumber} />
-          </View>
-          <View style={styles.metricItem}>
-            <MetricCard title="Ticket promedio" value={avgNumber} prefix="$" />
-          </View>
+          <MetricCard
+            title="Ventas totales"
+            value={formatCurrency(data.totalSales)}
+            icon="cash-outline"
+            trend={data.comparisonWithLastMonth.percentageChange}
+            trendLabel="vs mes anterior"
+          />
+          <MetricCard
+            title="Órdenes completadas"
+            value={data.totalOrders.toString()}
+            icon="checkmark-circle-outline"
+          />
+          <MetricCard
+            title="Valor promedio"
+            value={formatCurrency(data.averageOrderValue)}
+            icon="stats-chart-outline"
+          />
         </View>
 
-        <SalesLineChart data={salesByDay} />
-        <OrdersStatusChart data={ordersByStatus} />
+        {/* Comparación mensual (detallada) */}
+        <ComparisonCard
+          currentMonth={data.comparisonWithLastMonth.currentMonth}
+          lastMonth={data.comparisonWithLastMonth.lastMonth}
+          percentageChange={data.comparisonWithLastMonth.percentageChange}
+        />
+
+        {/* Gráfica de línea: ventas por día */}
+        <SalesLineChart data={data.salesByDay} label="Ventas por día (últimos 30 días)" />
+
+        {/* Top productos */}
+        <TopProductsChart products={data.topProducts} />
+
+        {/* Órdenes por estado (dona) */}
+        <OrdersStatusChart data={data.ordersByStatus} />
+
+        {/* Eventos de comportamiento (opcional, lista) */}
+        {data.topEvents.length > 0 && (
+          <View style={styles.eventsContainer}>
+            <Text style={styles.sectionTitle}>Eventos de usuarios</Text>
+            {data.topEvents.map(event => (
+              <View key={event.type} style={styles.eventRow}>
+                <Text style={styles.eventType}>{event.type}</Text>
+                <Text style={styles.eventCount}>{event.count}</Text>
+              </View>
+            ))}
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -73,9 +119,20 @@ export default function AnalyticsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  scrollContent: { padding: 16, paddingTop: 20 },
-  header: { fontSize: 24, fontWeight: '500', marginBottom: 16, color: COLORS.text },
-  metricsRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 },
-  metricItem: { flex: 1, marginHorizontal: 4 },
+  centerContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: COLORS.background },
+  scrollContent: { padding: 16, paddingBottom: 32 },
+  header: { fontSize: 24, fontWeight: '500', color: COLORS.text, marginBottom: 16 },
+  metricsRow: { flexDirection: 'row', flexWrap: 'wrap', marginHorizontal: -6, marginBottom: 16 },
+  eventsContainer: {
+    backgroundColor: COLORS.white,
+    borderRadius: 16,
+    padding: 16,
+    marginTop: 16,
+    borderWidth: 0.5,
+    borderColor: COLORS.border,
+  },
+  sectionTitle: { fontSize: 16, fontWeight: '500', color: COLORS.text, marginBottom: 12 },
+  eventRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6, borderBottomWidth: 0.5, borderBottomColor: COLORS.border },
+  eventType: { fontSize: 14, color: COLORS.text },
+  eventCount: { fontSize: 14, fontWeight: '500', color: COLORS.accent },
 });

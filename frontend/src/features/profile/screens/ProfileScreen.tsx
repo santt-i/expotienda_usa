@@ -49,7 +49,7 @@ export default function ProfileScreen({ navigation }: any) {
     {
       icon: 'location-outline' as const,
       label: 'Mis direcciones',
-      onPress: () => console.log('Navegar a direcciones'),
+      onPress: () => navigation.navigate('Addresses'),
     },
     {
       icon: 'card-outline' as const,

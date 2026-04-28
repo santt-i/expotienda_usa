@@ -13,6 +13,7 @@ import { DistributorModule } from './modules/distributor/distributor.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { UploadsModule } from './modules/uploads/uploads.module';
 import { PaymentsModule } from './modules/payments/payments.module';
+import { AddressesModule } from './modules/addresses/addresses.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { PaymentsModule } from './modules/payments/payments.module';
     CategoriesModule,
     UploadsModule,
     PaymentsModule,
+    AddressesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

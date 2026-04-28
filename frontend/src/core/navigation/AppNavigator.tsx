@@ -10,6 +10,7 @@ import DashboardScreen from '../../features/distributor/screens/DashboardScreen'
 import ProductsManagementScreen from '../../features/distributor/screens/ProductsManagmentScreen';
 import ProductFormScreen from '../../features/distributor/screens/ProductFormScreen';
 import OrdersManagementScreen from '../../features/distributor/screens/OrdersManagmentScreen';
+import AddressesScreen from '../../features/profile/screens/AdressesScreen';
 
 const Stack = createStackNavigator();
 
@@ -32,6 +33,7 @@ export default function AppNavigator() {
             <Stack.Screen name="ProductManagement" component={ProductsManagementScreen} />
             <Stack.Screen name="ProductForm" component={ProductFormScreen} />
             <Stack.Screen name="OrderManagement" component={OrdersManagementScreen} />
+            <Stack.Screen name="Addresses" component={AddressesScreen} />
           </>
         )}
       </Stack.Navigator>
