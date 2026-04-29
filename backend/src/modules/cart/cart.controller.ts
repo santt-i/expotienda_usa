@@ -3,6 +3,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { CartService } from './cart.service';
 import { AddToCartDto } from './dto/add-to-cart.dto';
 import { UpdateCartItemDto } from './dto/update-cart-item.dto';
+
 @Controller('cart')
 @UseGuards(AuthGuard('jwt'))
 export class CartController {
@@ -19,11 +20,7 @@ export class CartController {
   }
 
   @Put('item/:itemId')
-  updateItem(
-    @Request() req,
-    @Param('itemId') itemId: string,
-    @Body() updateCartItemDto: UpdateCartItemDto,
-  ) {
+  updateItem(@Request() req, @Param('itemId') itemId: string, @Body() updateCartItemDto: UpdateCartItemDto) {
     return this.cartService.updateItem(req.user.userId, +itemId, updateCartItemDto.quantity);
   }
 

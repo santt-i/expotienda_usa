@@ -3,10 +3,12 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { OrderStatus } from '@prisma/client';
+import { NotificationsService } from '../notifications/notifications.service';
+
 
 @Injectable()
 export class OrdersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService, private notificationsService: NotificationsService,) {}
 
   async create(userId: number, createOrderDto: CreateOrderDto) {
     const { storeId, items } = createOrderDto;
@@ -71,7 +73,7 @@ export class OrdersService {
       include: {
         items: { include: { product: true } },
         buyer: { select: { id: true, name: true, email: true } },
-        store: true,
+        store: { include: { owner: true } },
       },
     });
     if (!order) throw new NotFoundException(`Orden ${id} no existe`);
@@ -95,21 +97,25 @@ export class OrdersService {
   }
 
   async updateStatus(id: number, updateOrderDto: UpdateOrderDto, userId: number, userRole: string) {
-    const order = await this.prisma.order.findUnique({
-      where: { id },
-      include: { store: true },
-    });
-    if (!order) throw new NotFoundException(`Orden ${id} no existe`);
-    // ✅ Permiso: solo el dueño de la tienda o ADMIN
-    if (order.store.ownerId !== userId && userRole !== 'ADMIN') {
-      throw new ForbiddenException('No tienes permiso para actualizar esta orden');
-    }
-    return this.prisma.order.update({
-      where: { id },
-      data: updateOrderDto,
-      include: { items: { include: { product: true } } },
-    });
+  const order = await this.prisma.order.findUnique({
+    where: { id },
+    include: { store: true },
+  });
+  if (!order) throw new NotFoundException(`Orden ${id} no existe`);
+  if (order.store.ownerId !== userId && userRole !== 'ADMIN') {
+    throw new ForbiddenException('No tienes permiso para actualizar esta orden');
   }
+  const updatedOrder = await this.prisma.order.update({
+    where: { id },
+    data: updateOrderDto,
+    include: { items: { include: { product: true } } },
+  });
+  // Notificar solo si el estado cambió
+  if (updateOrderDto.status) {
+    await this.notificationsService.notifyOrderStatusChange(id, order.buyerId, updateOrderDto.status);
+  }
+  return updatedOrder;
+}
 
   async cancelOrder(id: number, userId: number, userRole: string) {
     const order = await this.prisma.order.findUnique({

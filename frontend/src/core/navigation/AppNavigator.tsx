@@ -11,7 +11,13 @@ import ProductsManagementScreen from '../../features/distributor/screens/Product
 import ProductFormScreen from '../../features/distributor/screens/ProductFormScreen';
 import OrdersManagementScreen from '../../features/distributor/screens/OrdersManagmentScreen';
 import AddressesScreen from '../../features/profile/screens/AdressesScreen';
+import ConversationsScreen from '../../features/chat/screens/ConversationsScreen';
+import ChatScreen from '../../features/chat/screens/ChatScreen';
+import NotificationsScreen from '../../features/notifications/screens/NotificationScreen';
 
+
+
+// dentro del Stack.Navigator:
 const Stack = createStackNavigator();
 
 export default function AppNavigator() {
@@ -34,6 +40,10 @@ export default function AppNavigator() {
             <Stack.Screen name="ProductForm" component={ProductFormScreen} />
             <Stack.Screen name="OrderManagement" component={OrdersManagementScreen} />
             <Stack.Screen name="Addresses" component={AddressesScreen} />
+            <Stack.Screen name="Conversations" component={ConversationsScreen} />
+            <Stack.Screen name="Chat" component={ChatScreen} />
+            <Stack.Screen name="Notifications" component={NotificationsScreen} />
+
           </>
         )}
       </Stack.Navigator>

@@ -7,7 +7,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   // Habilitar CORS
-  app.enableCors({
+  app.enableCors({  
     origin: true,
     credentials: true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
@@ -23,6 +23,10 @@ async function bootstrap() {
   );
 
   const port = process.env.PORT || 3001;
+  app.use((req, res, next) => {
+  res.setHeader('ngrok-skip-browser-warning', 'true');
+  next();
+});
   await app.listen(port, '0.0.0.0');
   console.log(`🚀 Servidor corriendo en http://localhost:${port}`);
 }

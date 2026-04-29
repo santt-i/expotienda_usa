@@ -9,7 +9,7 @@ import ProfileMenu, { MenuItem } from '../components/ProfileMenu';
 import { COLORS } from '../../../core/theme/colors';
 
 export default function ProfileScreen({ navigation }: any) {
-  const { user: authUser, signOut } = useAuth(); // usuario del contexto
+  const { user: authUser, signOut } = useAuth();
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const isDistributor = authUser?.role === 'DISTRIBUIDOR';
@@ -45,6 +45,11 @@ export default function ProfileScreen({ navigation }: any) {
       icon: 'list-outline' as const,
       label: 'Mis órdenes',
       onPress: () => navigation.navigate('MainTabs', { screen: 'Órdenes' }),
+    },
+    {
+      icon: 'chatbubbles-outline' as const,   // ✅ NUEVO ITEM PARA CHAT
+      label: 'Mensajes',
+      onPress: () => navigation.navigate('Conversations'),
     },
     {
       icon: 'location-outline' as const,

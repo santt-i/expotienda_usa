@@ -10,6 +10,7 @@ import CartScreen from '../../features/cart/screens/CartScreen';
 import OrdersScreen from '../../features/orders/screens/OrdersScreen';
 import ProfileScreen from '../../features/profile/screens/ProfileScreen';
 import AnalyticsScreen from '../../features/analytics/screens/AnalyticsScreen';
+import AdminDashboardScreen from '../../features/admin/screens/AdminDashboardScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -31,11 +32,15 @@ const COMMON_TABS: TabConfig[] = [
 export default function AppTabs() {
   const { user } = useAuth();
   const insets = useSafeAreaInsets();
-  const bottomPadding = insets.bottom > 0 ? insets.bottom : 8;
-
+  const bottomInset = insets.bottom;
+  console.log('🧪 Rol del usuario en AppTabs:', user?.role);
+  console.log('🧪 ¿Es ADMIN?', user?.role === 'ADMIN');
   const canViewAnalytics = user?.role === 'ADMIN' || user?.role === 'DISTRIBUIDOR';
-
+  const isAdmin = user?.role === 'ADMIN';
+  
+  // Construir array de tabs dinámicamente
   const tabs: TabConfig[] = [...COMMON_TABS];
+
   if (canViewAnalytics) {
     tabs.push({
       name: 'Analítica',
@@ -45,13 +50,22 @@ export default function AppTabs() {
     });
   }
 
+  if (isAdmin) {
+    tabs.push({
+      name: 'Admin',
+      component: AdminDashboardScreen,
+      iconFocused: 'shield-checkmark',
+      iconUnfocused: 'shield-outline',
+    });
+  }
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarIcon: ({ focused, color, size }) => {
           const tab = tabs.find(t => t.name === route.name);
-          if (!tab) return null; // seguridad por si no existe
+          if (!tab) return null;
           const iconName = focused ? tab.iconFocused : tab.iconUnfocused;
           return <Ionicons name={iconName as any} size={size} color={color} />;
         },
@@ -61,9 +75,9 @@ export default function AppTabs() {
           backgroundColor: COLORS.white,
           borderTopWidth: 0.5,
           borderTopColor: COLORS.border,
-          height: 60 + bottomPadding,
-          paddingBottom: bottomPadding,
-          paddingTop: 4,
+          height: 56 + bottomInset,      // altura total ajustada
+          paddingBottom: bottomInset,     // espacio para botones del sistema
+          paddingTop: 6,
         },
         tabBarLabelStyle: { fontSize: 10, fontWeight: '500' },
       })}

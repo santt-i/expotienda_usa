@@ -1,3 +1,4 @@
+// src/features/products/screens/HomeScreen.tsx
 import React, { useState, useCallback } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -9,6 +10,7 @@ import CategoryList from '../components/CategoryList';
 import StoreList from '../components/StoreList';
 import ProductGrid from '../components/ProductGrid';
 import { COLORS } from '../../../core/theme/colors';
+import { notificationsService } from '../../notifications/services/notifications-service';
 
 export default function HomeScreen() {
   const navigation = useNavigation();
@@ -17,9 +19,11 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [unreadCount, setUnreadCount] = useState(0);
 
   useFocusEffect(
     useCallback(() => {
+      // Cargar productos
       productsService.getProducts()
         .then((data) => {
           setAllProducts(data);
@@ -27,10 +31,15 @@ export default function HomeScreen() {
         })
         .catch(console.error)
         .finally(() => setLoading(false));
+
+      // Cargar contador de notificaciones no leídas
+      notificationsService.getUnreadCount()
+        .then(setUnreadCount)
+        .catch(console.error);
     }, [])
   );
 
-  // Aplica ambos filtros (categoría y búsqueda)
+  // Aplica ambos filtros (categoría y búsqueda por texto)
   const applyFilters = (products: Product[], categoryId: number | null, query: string) => {
     let filtered = products;
     if (categoryId !== null) {
@@ -45,32 +54,35 @@ export default function HomeScreen() {
     setFilteredProducts(filtered);
   };
 
+  // Cambio de categoría desde CategoryList
   const handleCategoryChange = (categoryId: number | null) => {
     setActiveCategoryId(categoryId);
     applyFilters(allProducts, categoryId, searchQuery);
   };
 
+  // Cambio en la barra de búsqueda (desde HomeHeader)
   const handleSearchChange = (text: string) => {
     setSearchQuery(text);
     applyFilters(allProducts, activeCategoryId, text);
   };
 
+  // Navegación al detalle de producto
   const handleProductPress = (productId: number) => {
     navigation.navigate('ProductDetail', { productId });
   };
 
+  // Acciones de los botones del header
   const handleCartPress = () => {
     navigation.navigate('MainTabs', { screen: 'Carrito' });
   };
+
   const handleAvatarPress = () => {
     navigation.navigate('Perfil');
   };
-  const handleNotificationsPress = () => {
-    alert('Próximamente: notificaciones');
-  };
 
-  // 🔍 Si hay texto en la búsqueda, ocultamos banner y categorías
-  const isSearching = searchQuery.trim().length > 0;
+  const handleNotificationsPress = () => {
+    navigation.navigate('Notifications');
+  };
 
   if (loading) return null;
 
@@ -82,14 +94,11 @@ export default function HomeScreen() {
         onCartPress={handleCartPress}
         onAvatarPress={handleAvatarPress}
         onNotificationsPress={handleNotificationsPress}
+        unreadCount={unreadCount}
       />
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-        {!isSearching && (
-          <>
-            <HomeBanner onExplore={() => navigation.navigate('Explorar')} />
-            <CategoryList onCategoryChange={handleCategoryChange} />
-          </>
-        )}
+        <HomeBanner onExplore={() => navigation.navigate('Explorar')} />
+        <CategoryList onCategoryChange={handleCategoryChange} />
         <StoreList />
         <ProductGrid products={filteredProducts} onProductPress={handleProductPress} />
       </ScrollView>

@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { authService, User } from '../../features/auth/services/auth.service';
+import { socketService } from '../../features/chat/services/socket.service';
 
 interface AuthContextData {
   isAuthenticated: boolean;
@@ -16,6 +17,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Efecto para conectar/desconectar WebSocket cuando cambia el usuario
+  useEffect(() => {
+    if (user) {
+      // Usuario autenticado → conectar WebSocket
+      socketService.connect().catch(console.error);
+    } else {
+      // No hay usuario → desconectar WebSocket
+      socketService.disconnect();
+    }
+  }, [user]);
 
   useEffect(() => {
     const loadStoredData = async () => {

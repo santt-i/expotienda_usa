@@ -15,7 +15,7 @@ export default function CartScreen({ navigation }: any) {
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
 
   const recalcTotal = (cartItems: CartItem[]) => {
-    const newTotal = cartItems.reduce((sum, item) => sum + (item.product?.priceCOP ?? 0) * item.quantity, 0);
+    const newTotal = cartItems.reduce((sum, item) => sum + ((item.price ?? item.product?.priceCOP ?? 0) * item.quantity), 0);
     setTotal(newTotal);
   };
 
@@ -120,7 +120,7 @@ export default function CartScreen({ navigation }: any) {
     <View style={styles.cartItem}>
       <View style={styles.itemInfo}>
         <Text style={styles.itemName}>{item.product.name}</Text>
-        <Text style={styles.itemPrice}>{formatCurrency(item.product.priceCOP)}</Text>
+        <Text style={styles.itemPrice}>{formatCurrency(item.price ?? item.product.priceCOP)}</Text>
       </View>
       <View style={styles.itemActions}>
         <View style={styles.quantitySelector}>

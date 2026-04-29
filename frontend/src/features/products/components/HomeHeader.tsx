@@ -22,6 +22,7 @@ type Props = {
   onCartPress: () => void;
   onAvatarPress: () => void;
   onNotificationsPress: () => void;
+  unreadCount: number; // nueva prop
 };
 
 export default function HomeHeader({
@@ -30,6 +31,7 @@ export default function HomeHeader({
   onCartPress,
   onAvatarPress,
   onNotificationsPress,
+  unreadCount,
 }: Props) {
   const { user } = useAuth();
   const avatarLetter = user?.name?.charAt(0).toUpperCase() ?? 'U';
@@ -42,7 +44,7 @@ export default function HomeHeader({
         <View style={styles.actions}>
           <TouchableOpacity style={styles.iconButton} onPress={onNotificationsPress}>
             <Ionicons name="notifications-outline" size={20} color={COLORS.text} />
-            <View style={styles.notifDot} />
+            {unreadCount > 0 && <View style={styles.notifDot} />}
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.iconButton} onPress={onCartPress}>
@@ -55,7 +57,7 @@ export default function HomeHeader({
         </View>
       </View>
 
-      {/* Barra de búsqueda ahora es un TextInput funcional */}
+      {/* Barra de búsqueda */}
       <View style={styles.searchContainer}>
         <Ionicons name="search-outline" size={16} color={COLORS.textSecondary} />
         <TextInput
@@ -91,12 +93,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0.5,
     borderBottomColor: COLORS.border,
   },
-  topRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
+  topRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
   logo: { width: LOGO_WIDTH, height: LOGO_HEIGHT },
   actions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   iconButton: {
@@ -138,12 +135,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     marginBottom: 10,
   },
-  searchInput: {
-    flex: 1,
-    fontSize: 14,
-    paddingVertical: 0,
-    color: COLORS.text,
-  },
+  searchInput: { flex: 1, fontSize: 14, color: COLORS.text },
   locationRow: { flexDirection: 'row', alignItems: 'center', gap: 3 },
   locationLabel: { color: COLORS.textSecondary, fontSize: 11 },
   locationValue: { color: COLORS.accent, fontSize: 11, fontWeight: '500' },

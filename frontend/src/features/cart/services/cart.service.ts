@@ -4,6 +4,7 @@ export interface CartItem {
   id: number;
   productId: number;
   quantity: number;
+  price?: number; // precio guardado en el carrito (para cotizaciones)
   product: {
     id: number;
     name: string;
@@ -20,8 +21,8 @@ export const cartService = {
     return response.data;
   },
 
-  async addItem(productId: number, quantity: number): Promise<CartItem> {
-    const response = await api.post('/cart/add', { productId, quantity });
+  async addItem(productId: number, quantity: number, customPrice?: number): Promise<CartItem> {
+    const response = await api.post('/cart/add', { productId, quantity, customPrice });
     return response.data;
   },
 

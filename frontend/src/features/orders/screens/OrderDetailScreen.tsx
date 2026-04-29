@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRoute } from '@react-navigation/native';
+import { useRoute, useNavigation } from '@react-navigation/native';
 import { ordersService, Order } from '../services/orders.service';
 import { COLORS } from '../../../core/theme/colors';
 import { formatCurrency } from '../../../utils/formatters';
-import { translateOrderStatus } from '../../../utils/OrderStatus';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function OrderDetailScreen() {
   const route = useRoute();
+  const navigation = useNavigation<any>();
   const { orderId } = route.params as { orderId: number };
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
@@ -20,9 +21,25 @@ export default function OrderDetailScreen() {
       .finally(() => setLoading(false));
   }, [orderId]);
 
+  const handleContactSeller = () => {
+    const sellerId = order?.store?.owner?.id;
+    const sellerName = order?.store?.owner?.name || 'Vendedor';
+    if (!sellerId) {
+      Alert.alert('Error', 'No se pudo identificar al vendedor');
+      return;
+    }
+    navigation.navigate('Chat', {
+      userId: sellerId,
+      name: sellerName,
+      contextType: 'order',
+      contextId: order?.id,
+      contextTitle: `Orden #${order?.id}`,
+    });
+  };
+
   if (loading) {
     return (
-      <SafeAreaView style={styles.center} edges={['top', 'bottom']}>
+      <SafeAreaView style={styles.center}>
         <ActivityIndicator size="large" color={COLORS.accent} />
       </SafeAreaView>
     );
@@ -30,7 +47,7 @@ export default function OrderDetailScreen() {
 
   if (!order) {
     return (
-      <SafeAreaView style={styles.center} edges={['top', 'bottom']}>
+      <SafeAreaView style={styles.center}>
         <Text>Orden no encontrada</Text>
       </SafeAreaView>
     );
@@ -40,7 +57,7 @@ export default function OrderDetailScreen() {
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <View style={styles.content}>
         <Text style={styles.title}>Orden #{order.id}</Text>
-        <Text style={styles.status}>Estado: {translateOrderStatus(order.status)}</Text>
+        <Text style={styles.status}>Estado: {order.status}</Text>
         <Text style={styles.date}>Fecha: {new Date(order.createdAt).toLocaleString()}</Text>
         <Text style={styles.store}>Tienda: {order.store.name}</Text>
         <Text style={styles.sectionTitle}>Productos</Text>
@@ -57,6 +74,12 @@ export default function OrderDetailScreen() {
           scrollEnabled={false}
         />
         <Text style={styles.total}>Total: {formatCurrency(order.total)}</Text>
+
+        {/* Botón para contactar al vendedor */}
+        <TouchableOpacity style={styles.chatButton} onPress={handleContactSeller}>
+          <Ionicons name="chatbubble-outline" size={18} color={COLORS.white} />
+          <Text style={styles.chatButtonText}>  Consultar sobre este pedido</Text>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
@@ -82,4 +105,14 @@ const styles = StyleSheet.create({
   itemQty: { width: 40, textAlign: 'center', fontSize: 14 },
   itemPrice: { width: 80, textAlign: 'right', fontSize: 14, color: COLORS.accent, fontWeight: '500' },
   total: { fontSize: 18, fontWeight: '500', color: COLORS.accent, textAlign: 'right', marginTop: 16 },
+  chatButton: {
+    flexDirection: 'row',
+    backgroundColor: COLORS.primaryDark,
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 24,
+  },
+  chatButtonText: { color: COLORS.white, fontSize: 16, fontWeight: '500' },
 });

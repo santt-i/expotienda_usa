@@ -152,11 +152,20 @@ model Message {
   senderId   Int
   receiverId Int
   content    String   @db.Text
+  contextType String?  // 'product', 'order', 'store', 'quote'
+  contextId  Int?
+  isQuote    Boolean  @default(false)
+  quoteProductId  Int?
+  quoteProductName String?
+  quotePrice      Float?
+  quoteQuantity   Int?
+  quoteStatus     String? @default("pending") // 'pending', 'accepted', 'rejected'
   createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
-  sender     User     @relation("SentMessages", fields: [senderId], references: [id])
-  receiver   User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
-  
+  sender   User @relation("SentMessages", fields: [senderId], references: [id])
+  receiver User @relation("ReceivedMessages", fields: [receiverId], references: [id])
+
   @@index([senderId])
   @@index([receiverId])
 }
@@ -166,6 +175,7 @@ model Cart {
   userId    Int        @unique
   user      User       @relation(fields: [userId], references: [id])
   items     CartItem[]
+  price     Float?      // ← agregar temporalmente, opcional
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
 }
@@ -177,6 +187,7 @@ model CartItem {
   productId Int
   product   Product @relation(fields: [productId], references: [id])
   quantity  Int
+  price     Float?   // ← nuevo campo para guardar el precio en el momento de agregar
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -210,4 +221,19 @@ model Address {
   updatedAt    DateTime @updatedAt
 
   @@index([userId])
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  title     String
+  body      String
+  type      String   // 'message', 'order_status', 'system'
+  data      Json?    // datos adicionales (orderId, messageId, etc.)
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([createdAt])
 }

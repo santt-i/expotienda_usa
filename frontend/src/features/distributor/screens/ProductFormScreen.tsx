@@ -126,7 +126,14 @@ export default function ProductFormScreen() {
 
       navigation.goBack();
     } catch (error: any) {
-      Alert.alert('Error', error?.response?.data?.message || 'No se pudo guardar');
+      const message = error?.response?.data?.message;
+
+Alert.alert(
+  'Error',
+  Array.isArray(message)
+    ? message.join('\n')
+    : message || 'No se pudo guardar'
+);
     } finally {
       setSaving(false);
     }

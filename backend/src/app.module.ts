@@ -14,6 +14,9 @@ import { CategoriesModule } from './modules/categories/categories.module';
 import { UploadsModule } from './modules/uploads/uploads.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { AddressesModule } from './modules/addresses/addresses.module';
+import { ChatModule } from './modules/chat/chat.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
+import { AdminModule } from './modules/admin/admin.module';
 
 @Module({
   imports: [
@@ -30,6 +33,9 @@ import { AddressesModule } from './modules/addresses/addresses.module';
     UploadsModule,
     PaymentsModule,
     AddressesModule,
+    ChatModule,
+    NotificationsModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],
