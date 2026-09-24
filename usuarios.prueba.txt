@@ -1,0 +1,46 @@
+admin1
+{
+  "email": "admin@expotienda.com",
+  "password": "Admin123456",
+  "token": eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsImVtYWlsIjoiYWRtaW5AZXhwb3RpZW5kYS5jb20iLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NzYyNzc0NzYsImV4cCI6MTc3Njg4MjI3Nn0.XzESXg3ZMBmSQdLWuu5xsXWYpRGE8Xg4heXwZybTK-4
+}
+
+Usuario santiago:
+{
+  "email": "santiago@test.com",
+  "password": "123456"
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjIsImVtYWlsIjoic2FudGlhZ29AdGVzdC5jb20iLCJyb2xlIjoiQ0xJRU5URSIsImlhdCI6MTc3NjI3OTE0MCwiZXhwIjoxNzc2ODgzOTQwfQ.FSP8_4ixIc-St9j5wMYkI4AmKwAgpMxr5jBRzq6L6-w"
+}
+
+Distribuidor 1:
+
+{
+	"access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjcsImVtYWlsIjoiZGlzdHJpYnVpZG9yX3Rlc3RAdGVzdC5jb20iLCJyb2xlIjoiRElTVFJJQlVJRE9SIiwiaWF0IjoxNzc2ODI4ODI4LCJleHAiOjE3Nzc0MzM2Mjh9.E-bkIeGmDHIBkE5KY-xMS3z2SWppcGUqHtNjl9LP0Yw",
+	"user": {
+		"id": 7,
+		"email": "distribuidor_test@test.com",
+    "password": "123456",
+		"name": "Distribuidor Test",
+		"role": "DISTRIBUIDOR"
+	}
+}
+
+1. Crear branch del sprint
+   git checkout -b feature/cloudinary-images
+
+2. Trabajar y hacer commits pequeños
+   git add .
+   git commit -m "feat: add cloudinary upload endpoint"
+
+3. Cuando el feature está listo, merge a develop
+   git checkout develop
+   git merge feature/cloudinary-images
+
+4. Cuando develop está estable, merge a main
+   git checkout main
+   git merge develop
+
+   Número: 4242 4242 4242 4242
+Fecha:  12/28  (cualquier fecha futura)
+CVC:    123    (cualquier 3 dígitos)
+ZIP:    12345  (cualquier 5 dígitos)

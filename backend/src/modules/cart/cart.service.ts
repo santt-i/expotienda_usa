@@ -32,37 +32,52 @@ export class CartService {
   }
 
   async addItem(userId: number, addToCartDto: AddToCartDto) {
-    const { productId, quantity, customPrice } = addToCartDto;
-
-    const product = await this.prisma.product.findUnique({ where: { id: productId } });
-    if (!product) throw new NotFoundException('Producto no encontrado');
-    if (product.stock < quantity) throw new ForbiddenException('Stock insuficiente');
-
-    const price = customPrice ?? Number(product.priceCOP);
-
-    const cart = await this.getOrCreateCart(userId);
-    const existingItem = await this.prisma.cartItem.findUnique({
-      where: { cartId_productId: { cartId: cart.id, productId } },
+  const { productId, quantity, customPrice } = addToCartDto;
+  if (quantity <= 0) {
+    // Si la cantidad es cero, eliminar el item si existe
+    const existingItem = await this.prisma.cartItem.findFirst({
+      where: { cart: { userId }, productId },
     });
-
     if (existingItem) {
-      return this.prisma.cartItem.update({
-        where: { id: existingItem.id },
-        data: { quantity: existingItem.quantity + quantity },
-        include: { product: true },
-      });
-    } else {
-      return this.prisma.cartItem.create({
-        data: {
-          cartId: cart.id,
-          productId,
-          quantity,
-          price,
-        },
-        include: { product: true },
-      });
+      await this.prisma.cartItem.delete({ where: { id: existingItem.id } });
+      // No retornamos nada, simplemente eliminamos
     }
+    return { message: 'Item eliminado' };
   }
+
+  const product = await this.prisma.product.findUnique({ where: { id: productId } });
+  if (!product) throw new NotFoundException('Producto no encontrado');
+  if (product.stock < quantity) throw new ForbiddenException('Stock insuficiente');
+
+  const price = customPrice ?? Number(product.priceCOP);
+
+  const cart = await this.getOrCreateCart(userId);
+  const existingItem = await this.prisma.cartItem.findFirst({
+    where: { cartId: cart.id, productId },
+  });
+
+  if (existingItem) {
+    // Actualizar cantidad y precio (el precio de la cotización tiene prioridad)
+    return this.prisma.cartItem.update({
+      where: { id: existingItem.id },
+      data: {
+        quantity,
+        price, // sobrescribe el precio con el de la cotización
+      },
+      include: { product: true },
+    });
+  } else {
+    return this.prisma.cartItem.create({
+      data: {
+        cartId: cart.id,
+        productId,
+        quantity,
+        price,
+      },
+      include: { product: true },
+    });
+  }
+}
 
   async updateItem(userId: number, itemId: number, quantity: number) {
     const item = await this.prisma.cartItem.findFirst({
