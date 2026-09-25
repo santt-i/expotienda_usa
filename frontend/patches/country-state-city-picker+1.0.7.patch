@@ -1,0 +1,15 @@
+﻿diff --git a/node_modules/country-state-city-picker/package.json b/node_modules/country-state-city-picker/package.json
+index 1234567..abcdefg 100644
+--- a/node_modules/country-state-city-picker/package.json
++++ b/node_modules/country-state-city-picker/package.json
+@@ -15,9 +15,7 @@
+   "devDependencies": {
+     "prettier": "^3.5.2",
+     "patch-package": "^8.0.0"
+   },
+-  "scripts": {
+-    "postinstall": "patch-package"
+-  },
++  "scripts": {},
+   "files": [
+     "src",
