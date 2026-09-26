@@ -12,12 +12,10 @@
       "distribution": "internal",
       "android": {
         "buildType": "apk"
-      },
-      "installCommand": "npm ci --include=dev --ignore-scripts && npx patch-package"
+      }
     },
     "production": {
-      "autoIncrement": true,
-      "installCommand": "npm ci --include=dev --ignore-scripts && npx patch-package"
+      "autoIncrement": true
     }
   },
   "submit": {
