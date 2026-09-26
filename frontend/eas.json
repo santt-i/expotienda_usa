@@ -9,10 +9,15 @@
       "distribution": "internal"
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "installCommand": "npm ci --include=dev --ignore-scripts && npx patch-package"
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "installCommand": "npm ci --include=dev --ignore-scripts && npx patch-package"
     }
   },
   "submit": {
