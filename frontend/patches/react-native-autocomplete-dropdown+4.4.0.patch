@@ -1,0 +1,65 @@
+diff --git a/node_modules/react-native-autocomplete-dropdown/src/index.tsx b/node_modules/react-native-autocomplete-dropdown/src/index.tsx
+index 70b9b3e..74d3862 100644
+--- a/node_modules/react-native-autocomplete-dropdown/src/index.tsx
++++ b/node_modules/react-native-autocomplete-dropdown/src/index.tsx
+@@ -194,8 +194,12 @@ export const AutocompleteDropdown = memo<
+ 
+       let initialValueItem: AutocompleteDropdownItem | undefined
+       if (typeof initialValue === 'string') {
+-        initialValueItem = initialDataSet?.find(el => el.id === initialValue)
+-      } else if (typeof initialValue === 'object' && initialValue.id) {
++        initialValueItem = initialDataSet?.find(el => el.title === initialValue)
++
++        if (!initialValueItem) {
++          initialValueItem = initialDataSet?.find(el => el.id === initialValue)
++        }
++      } else if (typeof initialValue === 'object' && initialValue?.id) {
+         initialValueItem = initialDataSet?.find(el => el.id === initialValue?.id)
+         if (!initialValueItem) {
+           // set the item as it is if it's not in the list
+@@ -316,16 +320,24 @@ export const AutocompleteDropdown = memo<
+       }
+ 
+       const newSet = initialDataSet.filter((item: AutocompleteDropdownItem) => {
+-        const titleStr = item.title || ''
+-        const title = caseSensitive ? titleStr : titleStr.toLowerCase()
+-        const findWhere = ignoreAccents ? diacriticless(title) : title
++        const normalizeText = (text: string) => {
++          return ignoreAccents ? diacriticless(text.toLowerCase()) : text.toLowerCase();
++        };
++
++        let titleMatch = false;
++        if (typeof item.title === 'string') {
++          const normalizedTitle = normalizeText(item.title);
++          titleMatch = matchFromStart ? normalizedTitle.startsWith(findWhat) : normalizedTitle.includes(findWhat);
++        }
+ 
+-        if (matchFromStart) {
+-          return typeof item.title === 'string' && findWhere.startsWith(findWhat)
+-        } else {
+-          return typeof item.title === 'string' && findWhere.indexOf(findWhat) !== -1
++        let aliasMatch = false;
++        if (typeof item.alias === 'string' && item.filterByTitleOrAlias) {
++          const normalizedAlias = normalizeText(item.alias);
++            aliasMatch = matchFromStart ? normalizedAlias.startsWith(findWhat) : normalizedAlias.includes(findWhat);
+         }
+-      })
++
++        return titleMatch || aliasMatch;
++      });
+ 
+       setDataSet(newSet)
+     }, [ignoreAccents, matchFromStart, caseSensitive, searchText, trimSearchText, useFilter])
+diff --git a/node_modules/react-native-autocomplete-dropdown/src/types/index.ts b/node_modules/react-native-autocomplete-dropdown/src/types/index.ts
+index 9669aa2..835d0aa 100644
+--- a/node_modules/react-native-autocomplete-dropdown/src/types/index.ts
++++ b/node_modules/react-native-autocomplete-dropdown/src/types/index.ts
+@@ -5,6 +5,8 @@ import type { StyleProp, TextInputProps, TextStyle, ViewStyle, FlatListProps, Te
+ export type AutocompleteDropdownItem = {
+   id: string
+   title?: string | null
++  alias?: string | null
++  filterByTitleOrAlias?: boolean | null
+ }
+ 
+ export interface IAutocompleteDropdownRef {
